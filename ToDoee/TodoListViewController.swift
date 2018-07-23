@@ -11,7 +11,6 @@ import UIKit
 class TodoListViewController: UITableViewController {
 
     var itemArray: [Item] = [Item]()
-    var defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,9 +27,6 @@ class TodoListViewController: UITableViewController {
         item3.title = "Destroy Demongorgon"
         itemArray.append(item3)
 
-        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-            itemArray = items
-        }
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -80,8 +76,6 @@ class TodoListViewController: UITableViewController {
                 
                 self.itemArray.append(newItem)
 
-                self.defaults.set(self.itemArray, forKey: "TodoListArray")
-                
                 self.tableView.reloadData()
             }
         }
