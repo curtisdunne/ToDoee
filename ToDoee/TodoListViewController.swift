@@ -11,26 +11,30 @@ import UIKit
 class TodoListViewController: UITableViewController {
 
     var itemArray: [Item] = [Item]()
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        let newItem = Item()
-        newItem.title = "Find Mike"
-        itemArray.append(newItem)
         
-        let item2 = Item()
-        item2.title = "Buy Eggos"
-        itemArray.append(item2)
-        
-        let item3 = Item()
-        item3.title = "Destroy Demongorgon"
-        itemArray.append(item3)
-
+        loadItems()
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding Items Array, \(error)")
+            }
+            
+            tableView.reloadData()
+        }
     }
     
     // MARK: UITableViewDataSource Delegate methods
@@ -58,6 +62,8 @@ class TodoListViewController: UITableViewController {
         
         item.done = !item.done
         
+        saveItems()
+        
         tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
@@ -75,6 +81,8 @@ class TodoListViewController: UITableViewController {
                 newItem.done = false
                 
                 self.itemArray.append(newItem)
+                
+                self.saveItems()
 
                 self.tableView.reloadData()
             }
@@ -87,6 +95,17 @@ class TodoListViewController: UITableViewController {
         
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
+    }
+    
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding array, \(error)")
+        }
     }
 }
 
