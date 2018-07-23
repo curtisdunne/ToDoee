@@ -11,9 +11,14 @@ import UIKit
 class TodoListViewController: UITableViewController {
 
     var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    var defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items 
+        }
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -50,7 +55,6 @@ class TodoListViewController: UITableViewController {
     }
     
     // MARK: Add new items
-    
     @IBAction func addButtonTapped(_ sender: Any) {
         var textField: UITextField = UITextField()
         
@@ -59,6 +63,8 @@ class TodoListViewController: UITableViewController {
             if let text = textField.text {
                 self.itemArray.append(text)
 
+                self.defaults.set(self.itemArray, forKey: "TodoListArray")
+                
                 self.tableView.reloadData()
             }
         }
