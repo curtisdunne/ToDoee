@@ -13,7 +13,11 @@ class TodoListViewController: UITableViewController {
 
     var itemArray: [Item] = [Item]()
     
-    var category: Category?
+    var category: Category? {
+        didSet {
+            loadItems()
+        }
+    }
     
 //    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
@@ -21,8 +25,6 @@ class TodoListViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        loadItems()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -39,8 +41,25 @@ class TodoListViewController: UITableViewController {
         return 1
     }
     
-    func loadItems() {
+    func loadItems(predicate: NSPredicate? = nil) {
         let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        if let category = self.category {
+            if let name = category.name {
+                let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", name)
+                
+                if let predicate = predicate {
+                    let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, predicate])
+                    request.predicate = compoundPredicate
+                } else {
+                    request.predicate = categoryPredicate
+                }
+            } else {
+                request.predicate = predicate
+            }
+        } else {
+            request.predicate = predicate
+        }
         
         do {
             itemArray = try context.fetch(request)
@@ -90,6 +109,7 @@ class TodoListViewController: UITableViewController {
 
                 newItem.title = text
                 newItem.done = false
+                newItem.parentCategory = self.category
                 
                 self.itemArray.append(newItem)
                 
